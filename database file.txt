@@ -1,0 +1,14 @@
+-- Create database
+CREATE DATABASE security_db;
+
+-- Use the database
+USE security_db;
+
+-- Create table
+CREATE TABLE intrusion_events (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+      image_path VARCHAR(50) ,
+     distance_detected  VARCHAR(255) ,
+    event_status  VARCHAR(100) ,
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
