@@ -1,0 +1,80 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+#define TRIG 22
+#define ECHO 21
+#define buzzer 17
+#define red 18
+
+const char* SSID = "REGIS";
+const char* PASS = "day2@2026";
+
+
+const char* SERVER = "http://192.168.1.10/iot/data.php";
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  pinMode(buzzer, OUTPUT);
+  pinMode(red, OUTPUT);
+
+  WiFi.begin(SSID, PASS);
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED) { 
+  delay(400); 
+  Serial.print("."); }
+  Serial.println();
+  Serial.print("Connected. IP: ");
+  Serial.println(WiFi.localIP());
+
+}
+
+void loop() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10); 
+  digitalWrite(TRIG, LOW);
+
+  long duration = pulseIn(ECHO, HIGH);
+   
+  float cm = (duration * 0.034)/2;
+  Serial.print("Distance: "); 
+  Serial.print(cm); 
+  Serial.println(" cm");
+
+  if(cm <= 400){
+  digitalWrite(red, HIGH);
+  delay(300);
+  digitalWrite(red, LOW);
+  digitalWrite(buzzer, HIGH);
+  delay(300);
+  digitalWrite(buzzer, LOW);
+  String status = "Danger";
+  String image = "Image captured";
+  
+  }
+
+  else{
+  digitalWrite(red, LOW);
+  digitalWrite(buzzer, LOW);
+  String status = "safe zone";
+  String image = "No image captured";
+  
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+  
+    HTTPClient http;
+    http.begin(SERVER);
+    String data = "distance=" + String(cm)
+                + "&status=" + status
+                + "&image=" + image; 
+    int code = http.POST(data);
+    Serial.print("HTTP code: ");
+    Serial.println(code);
+    http.end();
+  }
+
+  
